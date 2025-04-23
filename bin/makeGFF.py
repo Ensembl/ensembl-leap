@@ -210,11 +210,11 @@ def process_transcripts(merged_df, gff_df):
         elif strand == "-":
             # For fiveprime (CAGE)
             cage_start = (
-                int(row["capOrTail_Start_fiveprime1"])
-                if not pd.isna(row["capOrTail_Start_fiveprime1"])
+                int(row["capOrTail_End_fiveprime1"])
+                if not pd.isna(row["capOrTail_End_fiveprime1"])
                 else (
-                    int(row["capOrTail_Start_fiveprime2"])
-                    if not pd.isna(row["capOrTail_Start_fiveprime2"])
+                    int(row["capOrTail_End_fiveprime2"])
+                    if not pd.isna(row["capOrTail_End_fiveprime2"])
                     else gff_end
                 )
             )

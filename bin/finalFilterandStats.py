@@ -18,12 +18,16 @@ You must specify whether your input is 3' or 5' in the command line arguments.
 Usage: python finalFilterandStats.py <input_file> <5primeOr3Prime> <output_file>
 '''
 
-# Function to filter the DataFrame
-def filter_group(group):
-    if group.iloc[0]['Strand'] == '+':
+# Function to filter the DataFrame to find the biggest extension
+def filter_group(group, prime_label):
+    if group.iloc[0]['Strand'] == '+' and prime_label == 'fivePrime':
         return group.loc[group['capOrTail_Start'].idxmin()]
-    else:
+    elif group.iloc[0]['Strand'] == '-' and prime_label == 'fivePrime':
         return group.loc[group['capOrTail_End'].idxmax()]
+    elif group.iloc[0]['Strand'] == '+' and prime_label == 'threePrime':
+        return group.loc[group['capOrTail_End'].idxmax()]
+    elif group.iloc[0]['Strand'] == '-' and prime_label == 'threePrime':
+        return group.loc[group['capOrTail_Start'].idxmin()]
 
 def extract_transcript_name(attributes):
     match = re.search(r'Parent=transcript:(ENST\d+)', attributes)
@@ -59,7 +63,7 @@ def main(input_file, prime_choice, output_file):
     df = df.dropna(subset=['capOrTail_Start', 'capOrTail_End', 'Name'])
 
     # Group by 'Transcript_Name' and apply the filter function
-    filtered_df = df.groupby('Name').apply(filter_group).reset_index(drop=True)
+    filtered_df = df.groupby('Name').apply(filter_group, prime_label).reset_index(drop=True)
 
     # Save the filtered DataFrame to a new CSV file with header
     filtered_df.to_csv(output_file, sep='\t', index=False, header=True)
@@ -79,34 +83,52 @@ def main(input_file, prime_choice, output_file):
         header.append('Difference')  # Add new column for differences
         writer.writerow(header)  # Write header to output file
 
+        current_gene_name = None  # Track the current gene name
+
         for row in reader:
             try:
+                gene_name = row[9]  # Assuming gene name is in column 9
                 strand = row[6]
-                if strand == '+':
-                    selected_value = float(row[13])
-                    difference = abs(selected_value - float(row[11]))
-                    differences.append(difference)
-                    row.append(difference)  # Add difference to the row
-                    writer.writerow(row)  # Write row to output file
-                else:
-                    selected_value = float(row[14])
-                    difference = abs(selected_value - float(row[12]))
-                    differences.append(difference)
-                    row.append(difference)  # Add difference to the row
-                    writer.writerow(row)  # Write row to output file
 
-                if difference > largest_difference:
-                    largest_difference = difference
-                    ensg_largest_extension = row[9]
+                # Reset current_gene_name when the gene name changes
+                if gene_name != current_gene_name:
+                    if current_gene_name is not None:
+                        # Debugging print for the previous gene
+                        print(f"Processed gene: {current_gene_name}")
+                    current_gene_name = gene_name
 
-            except ValueError as e:
-                print(f"Error converting row to float: {row} - {e}")
-            except IndexError as e:
-                print(f"Error with row indexing: {row} - {e}")
+                # Calculate the difference based on prime_label and strand
+                if prime_label == 'fivePrime':
+                    if strand == '+':
+                        selected_value = float(row[13])
+                        difference = abs(selected_value - float(row[11]))
+                    else:
+                        selected_value = float(row[14])
+                        difference = abs(selected_value - float(row[12]))
+                elif prime_label == 'threePrime':
+                    if strand == '+':
+                        selected_value = float(row[14])
+                        difference = abs(selected_value - float(row[11]))
+                    else:
+                        selected_value = float(row[13])
+                        difference = abs(selected_value - float(row[11]))
 
-    # Calculate mean and median of the differences
+                # Append the difference and write the row
+                differences.append(difference)
+                row.append(difference)  # Add difference to the row
+                writer.writerow(row)  # Write row to output file
+
+                # Debugging prints
+                print(f"Gene: {gene_name}, Difference: {difference}")
+
+            except (ValueError, IndexError) as e:
+                print(f"Error processing row: {row} - {e}")
+                continue  # Skip to the next row if there's an error
     mean_difference = statistics.mean(differences)
     median_difference = statistics.median(differences)
+    # Calculate the largest extension
+    largest_difference = max(differences)
+
 
     # Write statistics to a file
     
@@ -115,7 +137,7 @@ def main(input_file, prime_choice, output_file):
     with open(stats_file, 'w') as f:
         f.write(f"Mean of differences: {mean_difference}\n")
         f.write(f"Median of differences: {median_difference}\n")
-        f.write(f"Largest extension: {largest_difference} (ENSG: {ensg_largest_extension})\n")
+        f.write(f"Largest extension: {largest_difference}\n")
 
     # Create a distribution chart (histogram) of the differences
     plt.hist(differences, bins=30, edgecolor='black')

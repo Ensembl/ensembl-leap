@@ -46,14 +46,14 @@ chromosomes = Channel.from('1', '2',
 include { THREE_PRIME_PIPELINE } from './subworkflows/three_prime_pipeline'
 include { FIVE_PRIME_PIPELINE } from './subworkflows/five_prime_pipeline'
 
-params.outputDir = 'results_ENCODE'
+params.outputDir = 'results_DFbrainAndMixture'
 
 workflow {
     prep_next = true
     // three prime is always single exon true, maybe not five prime 
     single_exon = true
     // Define the path to your CSV file
-    csv_file = channel.fromPath("inputENCODE.csv").splitCsv( header: true, strip:true) //If no strip:true then any white space will void this function
+    csv_file = channel.fromPath("input_csvs/inputDFbrainAndMixture.csv").splitCsv( header: true, strip:true) //If no strip:true then any white space will void this function
     .view()
     .map { row ->
             def end = row.End.toLowerCase()
@@ -100,7 +100,7 @@ workflow {
         three_prime_results_two = THREE_PRIME_PIPELINE(new_three_ch, prep_next, single_exon, chromosomes)
         five_prime_results_two = FIVE_PRIME_PIPELINE(new_five_ch, prep_next, single_exon, chromosomes)
 
-            // Publish outputs
+    // Publish outputs
     PUBLISH_RESULTS(three_prime_results_one, five_prime_results_one, three_prime_results_two, five_prime_results_two)
 }
 

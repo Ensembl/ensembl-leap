@@ -132,7 +132,7 @@ def findMatchesThreePrime(human, fantom, longRead, capOrTail):
             (capOrTail['Strand'] == exon['Strand']) &
             (capOrTail['Chromosome'] == exon['Chromosome']) &
             ((capOrTail['Start'] > exon['End']) if exon['Strand'] == '+' else (capOrTail['End'] < exon['Start'])) &
-            ((capOrTail['Start'] <= (exon['Start'] + 10000)) if exon['Strand'] == '+' else (capOrTail['End'] >= (exon['End'] - 10000)))
+            ((capOrTail['Start'] <= (exon['End'] + 10000)) if exon['Strand'] == '+' else (capOrTail['End'] >= (exon['Start'] - 10000)))
             
         ]
         # Debug filtered results
