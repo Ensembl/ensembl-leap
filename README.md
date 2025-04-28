@@ -19,10 +19,15 @@ None
 
 ### Human Genome:
 Protein Coding Only 
+
 No Read throughs 
+
 No single exons in the 3' direction 
+
 No transcripts that do not have a 3' or 5' UTR 
+
 Only CDS
+
 MANE should only be used if there is no other CDS in the gene, in that case MANE should be duplicated 
 
 ## USAGE
