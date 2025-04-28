@@ -8,17 +8,22 @@ Date: 13.03.25
 
 ### List of LEAP filters. This may not be every single filter but hopefully this is instructive. 
 
-PolyA - Only including PolyA sites that have an actual polyA signal within 50bp of the annotated site, this is done before the pipeline begins 
-Cage - None
-FANTOM transcripts - None
-LongRead Transcripts - None
+### PolyA: 
+Only including PolyA sites that have an actual polyA signal within 50bp of the annotated site, this is done before the pipeline begins 
+Cage:
+None
+### FANTOM transcripts:
+None
+### LongRead Transcripts:
+None
 
-Human Genome -  Protein Coding Only 
-                No Read throughs 
-                No single exons in the 3' direction 
-                No transcripts that do not have a 3' or 5' UTR 
-                Only CDS
-                MANE should only be used if there is no other CDS in the gene, in that case MANE should be duplicated 
+### Human Genome:
+Protein Coding Only 
+No Read throughs 
+No single exons in the 3' direction 
+No transcripts that do not have a 3' or 5' UTR 
+Only CDS
+MANE should only be used if there is no other CDS in the gene, in that case MANE should be duplicated 
 
 ## USAGE
 From the root of the directory:
